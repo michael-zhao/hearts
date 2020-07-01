@@ -12,9 +12,10 @@ class Deck:
 class Player:
     """Creates a player with a hand of cards."""
     def __init__(self):
-        """Initializes a player with an empty hand."""
+        """Initializes a player with an empty hand and a score."""
         super().__init__()
         self.hand = set()
+        self.score = 0
 
 class Game:
     """Records the Hearts game state."""
