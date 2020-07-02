@@ -65,7 +65,7 @@ class Game:
         """Progresses through a round, ends when each player's hand is empty (len(hand)=0)."""
         score_table = [["Player 1", self.p1.score], ["Player 2", self.p2.score], ["Player 3"
             , self.p3.score], ["Player 4", self.p4.score]]
-        print(tabulate.tabulate(score_table))
+        print(tabulate.tabulate(score_table, headers=["Player", "Score"]))
         self.deal()
         sorted_hand = sorted(self.p1.hand, key=lambda x: (x[1], x[0]))
         for rank, suit in sorted_hand:
