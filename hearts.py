@@ -1,4 +1,6 @@
 from random import *
+import pyfiglet
+import tabulate
 
 class Deck:
     """Creates a deck of cards 2,3,4,5,6,7,8,9,10,J,K,Q,A with suits Spades, Clubs, Hearts, & Diamonds."""
@@ -53,18 +55,28 @@ class Game:
                 pass
     
     def player_add(self, cards: list, direction: str):
+        """
+        Receives 3 cards from the player in the opposite direction 
+        (e.g. direction=left comes from the right).
+        """
         pass
 
     def round(self):
+        """Progresses through a round, ends when each player's hand is empty (len(hand)=0)."""
+        score_table = [["Player 1", self.p1.score], ["Player 2", self.p2.score], ["Player 3"
+            , self.p3.score], ["Player 4", self.p4.score]]
+        print(tabulate.tabulate(score_table))
         self.deal()
         sorted_hand = sorted(self.p1.hand, key=lambda x: (x[1], x[0]))
         for rank, suit in sorted_hand:
             print(rank + " of " + suit)
-        discard_direction = "left" if self.turn % 4 == 0 else "right" if self.turn % 4 == 1 else "top" if self.turn % 4 == 2 else "pass"
-        cards = input("choose the cards you want to discard to the " + discard_direction.upper() + ", demarcated with commas: ").split(',')
+        discard_direction = "left" if self.turn % 4 == 0 else "right" \
+            if self.turn % 4 == 1 else "top" if self.turn % 4 == 2 else "pass"
+        cards = input("choose the cards you want to discard to the " + discard_direction.upper() + 
+            ", demarcated with commas: \n").split(',')
         f_cards = [(card.split()[0], card.split()[2]) for card in cards]
         self.player_discard(f_cards, discard_direction)
-        print("turn: " + str(self.turn))
+        # print("turn: " + str(self.turn))
         print(self.p1.hand)
         if self.turn == 0: #whoever has 2 of clubs has to go first
             if (2, 'clubs') in self.p1.hand:
@@ -78,9 +90,9 @@ class Game:
                 
 
 def main():
+    print(pyfiglet.figlet_format("HEARTS"))
     a_game = Game()
     a_game.round()
 
-if __name__ == "__main__":
-    main()
+main()
     
