@@ -18,15 +18,15 @@ class Card:
     def __repr__(self): # for me
         return f"({self.rank}, {self.suit})"
 
-    def __str__(self): # for end user
+    def __str__(self): # for end user, requires use of some Unicode-enabled font
         if self.suit == "hearts":
             suit_color = colorama.Fore.RED + '\u2665'
-        if self.suit == "diamonds":
+        elif self.suit == "diamonds":
             suit_color = colorama.Fore.RED + '\u2666'
         elif self.suit == "spades":
             suit_color = '\u2660'
         elif self.suit == "clubs":
-            suit_color = '\u2663'
+            suit_color = '\u2663' 
         return self.dct[self.rank] + suit_color + colorama.Style.RESET_ALL
 
     def __getitem__(self):
@@ -51,7 +51,9 @@ class Player:
         """Initializes a player with an empty hand and a score."""
         super().__init__()
         self.hand = []
-        self.score = 0
+        # self.game_scores = [] # keeps track of player's score each round
+        self.score = 0 
+        # can use this to keep track of previous round scores; just keep appending to table list?
 
 class Game:
     """Records the Hearts game state."""
@@ -101,9 +103,9 @@ class Game:
     def pre_round(self):
         """Progresses through a round, ends when each player's hand is empty (len(hand)=0)."""
         # uses tabulate to print a table of scores at the beginning of each round
-        score_table = [["Player 1", self.p1.score], ["Player 2", self.p2.score], ["Player 3"
+        score_table = [["Player 1", self.p1.score, self.p1.score], ["Player 2", self.p2.score], ["Player 3"
             , self.p3.score], ["Player 4", self.p4.score]]
-        print(tabulate.tabulate(score_table, headers=["Player", "Score"]))
+        print(tabulate.tabulate(score_table, headers=["Player", f"Round {self.turn+1} Score"]))
         print()
 
         # deal all 52 cards to the 4 players (13 to each player)
@@ -124,16 +126,24 @@ class Game:
         #     print(str(rank) + " of " + suit) # print each card in the player's hand
         print("Your hand:")
         for card in sorted_hand:
-            print(card) # prints each card as formatted in Card.__str__()
+            print(card, end=" ") # prints each card as formatted in Card.__str__()
         # print(sorted_hand) # this just prints the list, so no formatting
-        
+        print("\n-----------------")
+
         # based on American rules (turn 1 left, turn 2 right, turn 3 up, turn 4 none, repeat)
         discard_direction = "left" if self.turn % 4 == 0 else "right" \
             if self.turn % 4 == 1 else "top" if self.turn % 4 == 2 else "pass"
 
         # use discard_direction and take user input for the desired discarded cards
-        cards = input("Choose the cards you want to discard to the " + discard_direction.upper() + 
-            ", demarcated with commas: \n").split(',')
+        cards = []
+        while len(cards) < 3:
+            if len(cards) > 0:
+                print("Please make sure you are discarding exactly three (3) cards.\n"
+                "Here is your current selection: " + card for card in cards)
+            cards += input(f"Choose the {3-len(cards)} " + ("cards" if 3-len(cards) != 1 else "card") + 
+            " you want to discard to the " + discard_direction.upper() + 
+            ", with the following format: [RANK] of [SUIT] "
+                 "(e.g. 2 of diamonds), demarcated with commas: \n").split(',')
         f_cards = [(card.split()[0], card.split()[2]) for card in cards]
         self.player_discard(f_cards, discard_direction)
         # TODO: figure out which cards to choose to pass (p2, p3, p4)
@@ -154,9 +164,12 @@ class Game:
                 
 
 def main():
-    print(colorama.Fore.CYAN + pyfiglet.figlet_format("HEARTS") + colorama.Style.RESET_ALL)
+    print(colorama.Fore.CYAN + pyfiglet.figlet_format("HEARTS", font="slant") + 
+        colorama.Style.RESET_ALL)
     a_game = Game()
-    a_game.pre_round()
+    while a_game.p1.score < 100 and a_game.p2.score < 100\
+         and a_game.p3.score < 100 and a_game.p4.score < 100:
+        a_game.pre_round()
 
 main()
     
