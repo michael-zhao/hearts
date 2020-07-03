@@ -5,20 +5,29 @@ import colorama
 
 colorama.init() # initializes colorama
 class Card:
-    """Creates a Card object."""
+    """
+    A Card object that keeps track of the card's rank, suit, and card (?) which consists.
+    of a (rank, suit) tuple.
+    """
+    greater_than_ten = {11: "J", 12: "Q", 13: "K", 14: "A"}
+    less_than_ten = {x: str(x) for x in range(2, 11)}
+    dct = {**less_than_ten, **greater_than_ten}
     def __init__(self, rank, suit):
+        """Creates a Card object, given a rank and suit."""
         super().__init__()
-        greater_than_ten = {11: "J", 12: "Q", 13: "K", 14: "A"}
-        less_than_ten = {x: str(x) for x in range(2, 11)}
-        self.dct = {**less_than_ten, **greater_than_ten}
         self.rank = rank
         self.suit = suit
         self.card = (self.rank, self.suit)
     
     def __repr__(self): # for me
-        return f"({self.rank}, {self.suit})"
+        """The representation of a Card object."""
+        return self.card
 
     def __str__(self): # for end user, requires use of some Unicode-enabled font
+        """
+        The string representation (print() or str()) of a Card object. Uses red/black and 
+        the Unicode symbols for spade/club/heart/diamond in the following format: 10♠.
+        """
         if self.suit == "hearts":
             suit_color = colorama.Fore.RED + '\u2665'
         elif self.suit == "diamonds":
@@ -27,16 +36,27 @@ class Card:
             suit_color = '\u2660'
         elif self.suit == "clubs":
             suit_color = '\u2663' 
-        return self.dct[self.rank] + suit_color + colorama.Style.RESET_ALL
+        return Card.dct[self.rank] + suit_color + colorama.Style.RESET_ALL
 
-    def __getitem__(self):
-        return Card(rank, suit)
+    ## need for data encapsulation??
+    # def __getitem__(self):
+    #     """Returns the value of a Card object."""
+    #     return self.card
+
+    # def __setitem__(self, card):
+    #     """Sets the value of the Card object to input card."""
+    #     self.card = card
+    #     self.rank = card[0]
+    #     self.suit = card[1]
     
-    def __setitem__(self, rank, suit):
-        self.card = (rank, suit)
+    # def __setitem__(self, rank, suit):
+    #     """Sets the value of the Card object to (rank, suit) with inputs rank and suit."""
+    #     self.card = (rank, suit)
+    #     self.rank = rank
+    #     self.suit = suit
 
 class Deck:
-    """Creates a deck of cards 2,3,4,5,6,7,8,9,10,J,K,Q,A with suits Spades, Clubs, Hearts, & Diamonds."""
+    """A deck of cards 2,3,4,5,6,7,8,9,10,J,K,Q,A with suits Spades, Clubs, Hearts, & Diamonds."""
     ranks = [x for x in range(2, 15)]
     #  + list('JQKA')
     suits = ['spades', 'clubs', 'hearts', 'diamonds']
@@ -46,9 +66,9 @@ class Deck:
         self.cards = [Card(rank, suit) for rank in Deck.ranks for suit in Deck.suits]
 
 class Player:
-    """Creates a player with a hand of cards."""
+    """A player with a hand of cards and a score."""
     def __init__(self):
-        """Initializes a player with an empty hand and a score."""
+        """Initializes a player with an empty hand and a score of 0."""
         super().__init__()
         self.hand = []
         # self.game_scores = [] # keeps track of player's score each round
@@ -126,7 +146,7 @@ class Game:
         #     print(str(rank) + " of " + suit) # print each card in the player's hand
         print("Your hand:")
         for card in sorted_hand:
-            print(card, end=" ") # prints each card as formatted in Card.__str__()
+            print(card, end=" ") # prints each card as formatted in Card.__str__(), end arg keeps it on same line
         # print(sorted_hand) # this just prints the list, so no formatting
         print("\n-----------------")
 
