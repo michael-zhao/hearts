@@ -2,8 +2,11 @@ from random import *
 import pyfiglet
 import tabulate
 import colorama
+import functools
 
 colorama.init() # initializes colorama
+
+@functools.total_ordering
 class Card:
     """
     A Card object that keeps track of the card's rank, suit, and card (?) which consists.
@@ -11,49 +14,67 @@ class Card:
     """
     greater_than_ten = {11: "J", 12: "Q", 13: "K", 14: "A"}
     less_than_ten = {x: str(x) for x in range(2, 11)}
+    r_less_than_ten = {str(x): x for x in range(2, 11)}
+    r_greater_than_ten = {"J": 11, "Q": 12, "K": 13, "A": 14}
+    reverse_dct = {**r_less_than_ten, **r_greater_than_ten}
     dct = {**less_than_ten, **greater_than_ten}
     def __init__(self, rank, suit):
         """Creates a Card object, given a rank and suit."""
         super().__init__()
-        self.rank = rank
-        self.suit = suit
-        self.card = (self.rank, self.suit)
+        self.__rank = rank
+        self.__suit = suit
+        #self.card = (self.__rank, self.__suit)
     
     def __repr__(self): # for me
         """The representation of a Card object."""
-        return self.card
+        return f"({self.__rank}, {self.__suit})"
 
     def __str__(self): # for end user, requires use of some Unicode-enabled font
         """
         The string representation (print() or str()) of a Card object. Uses red/black and 
         the Unicode symbols for spade/club/heart/diamond in the following format: 10♠.
         """
-        if self.suit == "hearts":
+        if self.__suit == "hearts":
             suit_color = colorama.Fore.RED + '\u2665'
-        elif self.suit == "diamonds":
+        elif self.__suit == "diamonds":
             suit_color = colorama.Fore.RED + '\u2666'
-        elif self.suit == "spades":
+        elif self.__suit == "spades":
             suit_color = '\u2660'
-        elif self.suit == "clubs":
+        elif self.__suit == "clubs":
             suit_color = '\u2663' 
-        return Card.dct[self.rank] + suit_color + colorama.Style.RESET_ALL
+        return Card.dct[self.__rank] + suit_color + colorama.Style.RESET_ALL
+
+    def __eq__(self, comp):
+        if not isinstance(comp, Card):
+            return False
+        return self.__rank == comp.__rank and self.__suit == comp.__suit
+
+    def __lt__(self, comp):
+        if not isinstance(comp, Card):
+            return False
+        return self.__rank < comp.__rank and self.__suit == comp.__suit
 
     ## need for data encapsulation??
-    # def __getitem__(self):
-    #     """Returns the value of a Card object."""
+    # def get_card(self):
+    #     """Retrieves """
     #     return self.card
 
-    # def __setitem__(self, card):
-    #     """Sets the value of the Card object to input card."""
-    #     self.card = card
-    #     self.rank = card[0]
-    #     self.suit = card[1]
-    
-    # def __setitem__(self, rank, suit):
-    #     """Sets the value of the Card object to (rank, suit) with inputs rank and suit."""
-    #     self.card = (rank, suit)
-    #     self.rank = rank
-    #     self.suit = suit
+    def get_rank(self):
+        """Returns the rank of the card."""
+        return self.__rank
+
+    def get_suit(self):
+        """Returns the suit of the card."""
+        return self.__suit
+
+    def set_rank_and_suit(self, rank, suit):
+        """Sets the rank and suit of a card."""
+        self.__rank = rank
+        self.__suit = suit
+
+def int_repr(rank_string):
+    """The integer representation of Card rank and suit."""
+    return Card.reverse_dct[rank_string]
 
 class Deck:
     """A deck of cards 2,3,4,5,6,7,8,9,10,J,K,Q,A with suits Spades, Clubs, Hearts, & Diamonds."""
@@ -77,6 +98,7 @@ class Player:
 
 class Game:
     """Records the Hearts game state."""
+    round_winner = None
     def __init__(self):
         """Creates a deck of cards, 4 players, and turn count."""
         super().__init__()
@@ -98,19 +120,19 @@ class Game:
 
     def player_discard(self, cards: list, direction: str): 
         """Discards (passes) 3 cards in the desired direction."""
-        # print(cards)
-        # print(self.p1.hand)
+        print(cards)
+        print(self.p1.hand)
         if direction == "pass":
             pass
         for card in cards:
             # print("inner loop")
             self.p1.hand.remove(card)
             if direction == "left":
-                self.p2.hand.add(card)
+                self.p2.hand.append(card)
             if direction == "right":
-                self.p4.hand.add(card)
+                self.p4.hand.append(card)
             if direction == "top":
-                self.p3.hand.add(card)
+                self.p3.hand.append(card)
     
     def player_add(self, cards: list, direction: str):
         """
@@ -123,17 +145,23 @@ class Game:
     def pre_round(self):
         """Progresses through a round, ends when each player's hand is empty (len(hand)=0)."""
         # uses tabulate to print a table of scores at the beginning of each round
-        score_table = [["Player 1", self.p1.score, self.p1.score], ["Player 2", self.p2.score], ["Player 3"
-            , self.p3.score], ["Player 4", self.p4.score]]
-        print(tabulate.tabulate(score_table, headers=["Player", f"Round {self.turn+1} Score"]))
-        print()
+        if self.turn > 0:
+            score_table = [[colorama.Fore.MAGENTA + str(self.turn) + colorama.Style.RESET_ALL, 
+                self.p1.score, self.p2.score, self.p3.score, self.p4.score,
+                Game.round_winner]]
+            print(tabulate.tabulate(score_table
+                , headers=[colorama.Fore.MAGENTA + "Hand" + colorama.Style.RESET_ALL, 
+                "Player 1", "Player 2",
+                "Player 3", "Player 4", "Winner"], tablefmt="github"
+            ))
+            print()
 
         # deal all 52 cards to the 4 players (13 to each player)
         self.deal()
 
         # sort the player's hand (assuming p1 is the player); other players don't matter 
         # at least until multiplayer is implemented
-        sorted_hand = sorted(self.p1.hand, key=lambda card: (card.suit, card.rank))
+        sorted_hand = sorted(self.p1.hand, key=lambda card: (card.get_suit(), card.get_rank()))
         # for rank, suit in sorted_hand:
         #     if rank == 11:
         #         rank = "J"
@@ -159,12 +187,16 @@ class Game:
         while len(cards) < 3:
             if len(cards) > 0:
                 print("Please make sure you are discarding exactly three (3) cards.\n"
-                "Here is your current selection: " + card for card in cards)
+                "Here is your current selection: ")
+                for card in cards:
+                    print(card)
             cards += input(f"Choose the {3-len(cards)} " + ("cards" if 3-len(cards) != 1 else "card") + 
             " you want to discard to the " + discard_direction.upper() + 
             ", with the following format: [RANK] of [SUIT] "
                  "(e.g. 2 of diamonds), demarcated with commas: \n").split(',')
-        f_cards = [(card.split()[0], card.split()[2]) for card in cards]
+        f_cards = [Card(int_repr(card.split()[0]), card.split()[2]) for card in cards]
+        # print(f_cards[0].get_rank(), f_cards[0].get_suit())
+        # print(f_cards[0])
         self.player_discard(f_cards, discard_direction)
         # TODO: figure out which cards to choose to pass (p2, p3, p4)
         # print("turn: " + str(self.turn))
