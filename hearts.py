@@ -21,8 +21,7 @@ class Card:
     def __init__(self, rank, suit):
         """Creates a Card object, given a rank and suit."""
         super().__init__()
-        self.__rank = rank
-        self.__suit = suit
+        self.set_rank_and_suit(rank, suit)
         #self.card = (self.__rank, self.__suit)
     
     def __repr__(self): # for me
@@ -69,6 +68,11 @@ class Card:
 
     def set_rank_and_suit(self, rank, suit):
         """Sets the rank and suit of a card."""
+        if not isinstance(rank, int) and rank not in 'JQKA' or \
+            (isinstance(rank, int) and (rank < 2 or rank > 14)):
+            raise TypeError("Please enter an integer (2 - 10) or 'J,' 'Q,' 'K,' or 'A.'")
+        if not isinstance(suit, str):
+            raise TypeError("Please enter 'spades,' 'clubs,' 'hearts,' or 'diamonds.'")
         self.__rank = rank
         self.__suit = suit
 
@@ -134,6 +138,30 @@ class Game:
             if direction == "top":
                 self.p3.hand.append(card)
     
+    def find_optimal_discard(self, hand, direction):
+        """NPC decisionmaking for passing cards in a certain direction."""
+        num_spades = 0
+        num_hearts = 0
+        num_clubs = 0
+        num_dia = 0
+
+        passed_cards = []
+        for card in hand:
+            if card.get_suit() == 'spades':
+                num_spades += 1
+            elif card.get_suit() == 'hearts':
+                num_hearts += 1
+            elif card.get_suit() == 'clubs':
+                num_clubs += 1
+            elif card.get_suit() == 'diamonds':
+                num_dia += 1
+        
+        for card in hand:
+            if card.get_rank() == 12 and card.get_suit() == 'spades':
+                if num_spades > 2:
+                    passed_cards.append(card)
+        return passed_cards
+
     def player_add(self, cards: list, direction: str):
         """
         Receives 3 cards from the player in the opposite direction 
@@ -143,7 +171,7 @@ class Game:
         pass
 
     def pre_round(self):
-        """Progresses through a round, ends when each player's hand is empty (len(hand)=0)."""
+        """Sets up for a round (trick/hand)."""
         # uses tabulate to print a table of scores at the beginning of each round
         if self.turn > 0:
             score_table = [[colorama.Fore.MAGENTA + str(self.turn) + colorama.Style.RESET_ALL, 
@@ -200,19 +228,27 @@ class Game:
         self.player_discard(f_cards, discard_direction)
         # TODO: figure out which cards to choose to pass (p2, p3, p4)
         # print("turn: " + str(self.turn))
-        print(self.p1.hand)
+        npc_discard = None
+        self.player_add(npc_discard, discard_direction)
+        print("Your current hand is: ")
+        for card in self.p1.hand:
+            print(card, end=" ")
+        print()
 
     def round(self):
-        if self.turn == 0: #whoever has 2 of clubs has to go first
-            if (2, 'clubs') in self.p1.hand:
-                print("You must play the 2 of clubs to start the game.")
-            else:
-                found = False
-                while not found:
-                    for player in self.players:
-                        if (2, 'clubs') in player.hand:
-                            found = True
-                            # TODO: make the NPC w/2 of clubs start first; no one else can
+        """Progresses through a round, ends when each player's hand is empty (len(hand)=0)."""
+        while len(self.p1.hand) == 0 and len(self.p2.hand) == 0 and len(self.p3.hand) == 0 and\
+            len(self.p4.hand) == 0:
+            if self.turn == 0: #whoever has 2 of clubs has to go first
+                if (2, 'clubs') in self.p1.hand:
+                    print("You must play the 2 of clubs to start the game.")
+                else:
+                    found = False
+                    while not found:
+                        for player in self.players:
+                            if (2, 'clubs') in player.hand:
+                                found = True
+                                # TODO: make the NPC w/2 of clubs start first; no one else can
                 
 
 def main():
@@ -222,6 +258,8 @@ def main():
     while a_game.p1.score < 100 and a_game.p2.score < 100\
          and a_game.p3.score < 100 and a_game.p4.score < 100:
         a_game.pre_round()
+        a_game.round()
+        a_game.turn += 1
 
 main()
     
