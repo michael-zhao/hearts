@@ -6,7 +6,7 @@ import functools
 
 colorama.init() # initializes colorama
 
-@functools.total_ordering
+# @functools.total_ordering
 class Card:
     """
     A Card object that keeps track of the card's rank, suit, and card (?) which consists.
@@ -68,7 +68,7 @@ class Card:
 
     def set_rank_and_suit(self, rank, suit):
         """Sets the rank and suit of a card."""
-        if not isinstance(rank, int) and rank not in 'JQKA' or \
+        if not isinstance(rank, int) or \
             (isinstance(rank, int) and (rank < 2 or rank > 14)):
             raise TypeError("Please enter an integer (2 - 10) or 'J,' 'Q,' 'K,' or 'A.'")
         if not isinstance(suit, str):
@@ -78,6 +78,7 @@ class Card:
 
 def int_repr(rank_string):
     """The integer representation of Card rank and suit."""
+    # pretty much only necessary for taking input (e.g. of cards to discard)
     return Card.reverse_dct[rank_string]
 
 class Deck:
@@ -124,8 +125,8 @@ class Game:
 
     def player_discard(self, cards: list, direction: str): 
         """Discards (passes) 3 cards in the desired direction."""
-        print(cards)
-        print(self.p1.hand)
+        # print(cards)
+        # print(self.p1.hand)
         if direction == "pass":
             pass
         for card in cards:
@@ -189,7 +190,7 @@ class Game:
 
         # sort the player's hand (assuming p1 is the player); other players don't matter 
         # at least until multiplayer is implemented
-        sorted_hand = sorted(self.p1.hand, key=lambda card: (card.get_suit(), card.get_rank()))
+        self.p1.hand.sort(key=lambda card: (card.get_suit(), card.get_rank()))
         # for rank, suit in sorted_hand:
         #     if rank == 11:
         #         rank = "J"
@@ -201,7 +202,7 @@ class Game:
         #         rank = "A"
         #     print(str(rank) + " of " + suit) # print each card in the player's hand
         print("Your hand:")
-        for card in sorted_hand:
+        for card in self.p1.hand:
             print(card, end=" ") # prints each card as formatted in Card.__str__(), end arg keeps it on same line
         # print(sorted_hand) # this just prints the list, so no formatting
         print("\n-----------------")
@@ -217,18 +218,23 @@ class Game:
                 print("Please make sure you are discarding exactly three (3) cards.\n"
                 "Here is your current selection: ")
                 for card in cards:
-                    print(card)
+                    card_obj = Card(int_repr(card.split()[0]), card.split()[2])
+                    print(card_obj, end=" ")
             cards += input(f"Choose the {3-len(cards)} " + ("cards" if 3-len(cards) != 1 else "card") + 
             " you want to discard to the " + discard_direction.upper() + 
             ", with the following format: [RANK] of [SUIT] "
                  "(e.g. 2 of diamonds), demarcated with commas: \n").split(',')
+        print() #newline
         f_cards = [Card(int_repr(card.split()[0]), card.split()[2]) for card in cards]
         # print(f_cards[0].get_rank(), f_cards[0].get_suit())
         # print(f_cards[0])
         self.player_discard(f_cards, discard_direction)
+        # print(self.p1.hand)
+        self.p1.hand.sort(key=lambda card: (card.get_suit(), card.get_rank()))
+        # print(self.p1.hand)
         # TODO: figure out which cards to choose to pass (p2, p3, p4)
         # print("turn: " + str(self.turn))
-        npc_discard = None
+        npc_discard = None # placeholder
         self.player_add(npc_discard, discard_direction)
         print("Your current hand is: ")
         for card in self.p1.hand:
