@@ -158,6 +158,9 @@ class Game:
                 num_dia += 1
         
         for card in hand:
+            # TODO: add an "algorithm" to figure out optimal card choices (i.e. if statements)
+            if card.get_rank() == 2 and card.get_suit() == 'clubs':
+                passed_cards.append(card)
             if card.get_rank() == 12 and card.get_suit() == 'spades':
                 if num_spades > 2:
                     passed_cards.append(card)
@@ -258,7 +261,7 @@ class Game:
                 
 
 def main():
-    print(colorama.Fore.CYAN + pyfiglet.figlet_format("HEARTS", font="slant") + 
+    print(colorama.Fore.CYAN + pyfiglet.figlet_format("HEARTS") + 
         colorama.Style.RESET_ALL)
     a_game = Game()
     while a_game.p1.score < 100 and a_game.p2.score < 100\
