@@ -141,6 +141,7 @@ class Game:
     
     def min_rank_in_suit(self, hand, suit):
         hand.sort(key=lambda card: (card.get_suit(), card.get_rank()))
+        get_first = lambda suit: 
 
     def find_optimal_discard(self, hand, direction):
         """NPC decisionmaking for passing cards in a certain direction."""
