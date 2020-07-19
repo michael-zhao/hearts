@@ -123,7 +123,7 @@ class Game:
                 if rand_card not in player.hand:
                     player.hand.append(rand_card)
 
-    def player_discard(self, cards: list, direction: str): 
+    def player_discard(self, player: Player, cards: list, direction: str): 
         """Discards (passes) 3 cards in the desired direction."""
         # print(cards)
         # print(self.p1.hand)
@@ -141,7 +141,7 @@ class Game:
     
     def min_rank_in_suit(self, hand, suit):
         hand.sort(key=lambda card: (card.get_suit(), card.get_rank()))
-        get_first = lambda suit: 
+        #get_first = lambda suit: 
 
     def find_optimal_discard(self, hand, direction):
         """NPC decisionmaking for passing cards in a certain direction."""
@@ -176,7 +176,10 @@ class Game:
         (e.g. direction=left comes from the right).
         """
         # TODO: implement player from opposite direction gives you 3 cards
-        pass
+        if direction == "pass":
+            pass
+        for card in cards:
+
 
     def pre_round(self):
         """Sets up for a round (trick/hand)."""
