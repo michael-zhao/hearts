@@ -123,10 +123,11 @@ class Game:
                 if rand_card not in player.hand:
                     player.hand.append(rand_card)
 
-    def player_discard(self, player: Player, cards: list, direction: str): 
+    def player_discard(self, cards: dict, direction: str): 
         """Discards (passes) 3 cards in the desired direction."""
         # print(cards)
         # print(self.p1.hand)
+        # use a dict e.g. {pX: [4C, 5H, 3C]}
         if direction == "pass":
             pass
         for card in cards:
@@ -178,7 +179,7 @@ class Game:
         # TODO: implement player from opposite direction gives you 3 cards
         if direction == "pass":
             pass
-        for card in cards:
+        # for card in cards:
 
 
     def pre_round(self):
@@ -235,10 +236,11 @@ class Game:
             ", with the following format: [RANK] of [SUIT] "
                  "(e.g. 2 of diamonds), demarcated with commas: \n").split(',')
         print() #newline
+        discarded_cards = dict.fromkeys(self.players)
         f_cards = [Card(int_repr(card.split()[0]), card.split()[2]) for card in cards]
         # print(f_cards[0].get_rank(), f_cards[0].get_suit())
         # print(f_cards[0])
-        self.player_discard(f_cards, discard_direction)
+        self.player_discard(discarded_cards, discard_direction)
         # print(self.p1.hand)
         self.p1.hand.sort(key=lambda card: (card.get_suit(), card.get_rank()))
         # print(self.p1.hand)
